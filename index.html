@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMOLED Flip Clock</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="flip-clock-container">
+        <div class="flip-unit" data-unit="hours">
+            <div class="flip-card">
+                <div class="top-half">00</div>
+                <div class="bottom-half">00</div>
+                <div class="flip-top" data-old="00" data-new="00"></div>
+                <div class="flip-bottom" data-old="00" data-new="00"></div>
+            </div>
+        </div>
+
+        <span class="separator">:</span>
+
+        <div class="flip-unit" data-unit="minutes">
+            <div class="flip-card">
+                <div class="top-half">00</div>
+                <div class="bottom-half">00</div>
+                <div class="flip-top" data-old="00" data-new="00"></div>
+                <div class="flip-bottom" data-old="00" data-new="00"></div>
+            </div>
+        </div>
+        
+        <span class="separator">:</span>
+
+        <div class="flip-unit" data-unit="seconds">
+            <div class="flip-card">
+                <div class="top-half">00</div>
+                <div class="bottom-half">00</div>
+                <div class="flip-top" data-old="00" data-new="00"></div>
+                <div class="flip-bottom" data-old="00" data-new="00"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

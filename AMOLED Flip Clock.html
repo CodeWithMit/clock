@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMOLED Flip Clock</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font for a modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            /* Clock appearance variables */
+            --clock-color: #FFFFFF;
+            --background-color: #000000;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --digit-bg: #111111; /* Slightly less dark for contrast */
+            --digit-size: 15vw;
+            --digit-line-height: 1.0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--clock-color);
+            overflow: hidden; /* Prevent scrollbars on full-screen view */
+        }
+
+        .flip-clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            gap: 1vw; /* Space between clock segments */
+            padding: 2vw;
+        }
+
+        .time-segment {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .label {
+            font-size: 2vw;
+            font-weight: 400;
+            margin-top: 1vh;
+            opacity: 0.7;
+            /* Responsive adjustment for small screens */
+            @media (max-width: 600px) {
+                font-size: 4vw;
+            }
+        }
+
+        /* --- Digit Styling --- */
+
+        .digit-group {
+            display: flex;
+            box-shadow: 0 0 20px var(--shadow-color);
+            border-radius: 1vw;
+            overflow: hidden;
+        }
+
+        .digit {
+            position: relative;
+            width: calc(var(--digit-size) * 0.7);
+            height: var(--digit-size);
+            line-height: var(--digit-line-height);
+            font-size: var(--digit-size);
+            font-weight: 900;
+            text-align: center;
+            border-radius: 0.5vw;
+            background-color: var(--digit-bg);
+            margin: 0.25vw;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            /* Responsive adjustments */
+            @media (max-width: 1024px) {
+                --digit-size: 20vw;
+            }
+            @media (max-width: 600px) {
+                --digit-size: 28vw;
+                margin: 0.5vw;
+                line-height: 0.9;
+            }
+        }
+
+        /* The static top and bottom halves */
+        .digit-half {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+            color: var(--clock-color);
+            background-color: var(--digit-bg);
+        }
+
+        .digit-top {
+            top: 0;
+            line-height: var(--digit-line-height);
+            border-bottom: 1px solid var(--digit-bg); /* Separator line */
+            border-top-left-radius: 0.5vw;
+            border-top-right-radius: 0.5vw;
+        }
+
+        .digit-bottom {
+            bottom: 0;
+            line-height: 0; /* Align text to the bottom edge of its container */
+            border-bottom-left-radius: 0.5vw;
+            border-bottom-right-radius: 0.5vw;
+        }
+
+        /* Text content inside the bottom half (shifted up) */
+        .digit-bottom > span {
+            display: inline-block;
+            transform: translateY(-50%);
+        }
+
+        /* --- Flipping Animation Elements --- */
+
+        .flip-card {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            left: 0;
+            perspective: 200px;
+            transform-style: preserve-3d;
+            z-index: 10;
+            transform: rotateX(0deg); /* Reset for animation */
+        }
+
+        .flip-card.flip {
+            animation: flip-down 0.6s ease-in-out;
+        }
+
+        @keyframes flip-down {
+            0% { transform: rotateX(0deg); z-index: 20; }
+            50% { transform: rotateX(-90deg); z-index: 20; }
+            100% { transform: rotateX(-180deg); z-index: 20; }
+        }
+
+        .flip-card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--digit-bg);
+            color: var(--clock-color);
+            overflow: hidden;
+            line-height: 0;
+            backface-visibility: hidden;
+            transform-origin: bottom center;
+            transform: rotateX(180deg); /* Backside starts flipped 180 deg */
+            border-bottom-left-radius: 0.5vw;
+            border-bottom-right-radius: 0.5vw;
+        }
+
+        .flip-card-back > span {
+            display: inline-block;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <div id="clock" class="flip-clock">
+        <!-- Structure for Hours -->
+        <div class="time-segment">
+            <div class="digit-group" id="hours">
+                <!-- Digits will be inserted here by JavaScript -->
+            </div>
+            <span class="label">HOURS</span>
+        </div>
+
+        <!-- Colon Separator -->
+        <div class="time-segment text-white text-[15vw] font-black leading-none pb-[5vh] sm:pb-[10vh]">
+            :
+        </div>
+
+        <!-- Structure for Minutes -->
+        <div class="time-segment">
+            <div class="digit-group" id="minutes">
+                <!-- Digits will be inserted here by JavaScript -->
+            </div>
+            <span class="label">MINUTES</span>
+        </div>
+
+        <!-- Colon Separator (hidden on mobile for space) -->
+        <div class="time-segment text-white text-[15vw] font-black leading-none pb-[5vh] sm:pb-[10vh] hidden sm:block">
+            :
+        </div>
+
+        <!-- Structure for Seconds -->
+        <div class="time-segment hidden sm:block">
+            <div class="digit-group" id="seconds">
+                <!-- Digits will be inserted here by JavaScript -->
+            </div>
+            <span class="label">SECONDS</span>
+        </div>
+    </div>
+
+    <script>
+        // IIFE for encapsulation
+        (function() {
+            // Helper function to create the digit HTML structure
+            function createDigitElement() {
+                const digitDiv = document.createElement('div');
+                digitDiv.className = 'digit relative';
+                digitDiv.innerHTML = `
+                    <div class="digit-half digit-top"><span>0</span></div>
+                    <div class="digit-half digit-bottom"><span>0</span></div>
+                    <div class="flip-card top-flip">
+                        <div class="digit-half digit-top"><span>0</span></div>
+                        <div class="flip-card-back"><span>0</span></div>
+                    </div>
+                `;
+                return digitDiv;
+            }
+
+            // Function to initialize segments (Hours, Minutes, Seconds)
+            function initSegment(id, digitsCount) {
+                const segment = document.getElementById(id);
+                const elements = [];
+                for (let i = 0; i < digitsCount; i++) {
+                    const digitElement = createDigitElement();
+                    segment.appendChild(digitElement);
+                    elements.push(digitElement);
+                }
+                return elements; // Array of digit element references
+            }
+
+            // Initialize all clock digits
+            const hoursElements = initSegment('hours', 2);
+            const minutesElements = initSegment('minutes', 2);
+            const secondsElements = initSegment('seconds', 2);
+
+            const allSegments = [
+                { elements: hoursElements, value: null },
+                { elements: minutesElements, value: null },
+                { elements: secondsElements, value: null },
+            ];
+
+            /**
+             * Updates a single digit element with a new value and triggers the flip animation.
+             * @param {HTMLElement} element - The digit container element.
+             * @param {string} oldValue - The current displayed value.
+             * @param {string} newValue - The new value to display.
+             */
+            function flipDigit(element, oldValue, newValue) {
+                if (oldValue === newValue) return;
+
+                const topStatic = element.querySelector('.digit-top > span:not(.top-flip > .digit-top > span)');
+                const bottomStatic = element.querySelector('.digit-bottom > span');
+                const topFlip = element.querySelector('.top-flip > .digit-top > span');
+                const backFlip = element.querySelector('.flip-card-back > span');
+                const flipCard = element.querySelector('.flip-card');
+
+                // 1. Set the static top to the old value
+                topStatic.textContent = oldValue;
+                
+                // 2. Set the static bottom to the new value (this is what is revealed)
+                bottomStatic.textContent = newValue;
+
+                // 3. Set the top flip card to the old value (this is what flips down)
+                topFlip.textContent = oldValue;
+
+                // 4. Set the back of the flip card to the new value (this is visible during the flip)
+                backFlip.textContent = newValue;
+
+                // 5. Trigger the animation
+                flipCard.classList.remove('flip');
+                // Force reflow to restart CSS animation
+                void flipCard.offsetWidth;
+                flipCard.classList.add('flip');
+
+                // 6. After the animation completes, the static parts are updated for the next flip
+                setTimeout(() => {
+                    topStatic.textContent = newValue;
+                }, 600); // Matches the 0.6s animation duration
+            }
+
+            /**
+             * Updates an entire clock segment (e.g., Hours)
+             * @param {Array<HTMLElement>} elements - Array of the two digit elements.
+             * @param {number} value - The new numeric value (0-59 or 0-23).
+             * @param {number | null} currentValue - The previously displayed value.
+             * @returns {number} The updated value.
+             */
+            function updateSegment(elements, value, currentValue) {
+                const paddedValue = String(value).padStart(2, '0');
+                const oldPaddedValue = String(currentValue === null ? -1 : currentValue).padStart(2, '0');
+
+                const tensDigitOld = oldPaddedValue[0];
+                const unitsDigitOld = oldPaddedValue[1];
+                const tensDigitNew = paddedValue[0];
+                const unitsDigitNew = paddedValue[1];
+
+                // Update Units digit (rightmost)
+                flipDigit(elements[1], unitsDigitOld, unitsDigitNew);
+
+                // Update Tens digit (leftmost), only if it changed
+                if (tensDigitOld !== tensDigitNew) {
+                    flipDigit(elements[0], tensDigitOld, tensDigitNew);
+                }
+
+                return value;
+            }
+
+            function updateClock() {
+                const now = new Date();
+                let h = now.getHours();
+                const m = now.getMinutes();
+                const s = now.getSeconds();
+
+                // Convert to 12-hour format for the display if preferred, 
+                // but for a clean flip clock, 24-hour is often better. Sticking to 24-hour.
+                // If 12-hour is desired, modify h calculation: h = h % 12 || 12;
+
+                allSegments[0].value = updateSegment(allSegments[0].elements, h, allSegments[0].value);
+                allSegments[1].value = updateSegment(allSegments[1].elements, m, allSegments[1].value);
+                allSegments[2].value = updateSegment(allSegments[2].elements, s, allSegments[2].value);
+            }
+
+            // Initial call to set the time immediately
+            updateClock();
+            
+            // Set up the interval to update every second
+            setInterval(updateClock, 1000);
+
+            // Optional: Log level setting for debug, though not strictly needed for this app.
+            // if (typeof setLogLevel === 'function') {
+            //     setLogLevel('Debug');
+            // }
+
+        })();
+    </script>
+</body>
+</html>

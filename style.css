@@ -1,0 +1,155 @@
+/* General AMOLED Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #000000; /* True black for AMOLED */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Arial', monospace;
+    perspective: 800px; /* For 3D rotation */
+}
+
+/* Clock Container */
+.flip-clock-container {
+    display: flex;
+    gap: 15px;
+    user-select: none;
+}
+
+/* Separator styling (the colon) */
+.separator {
+    font-size: 8rem;
+    color: #39FF14; /* Neon green */
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+}
+
+/* Single Flip Unit (e.g., Minutes) */
+.flip-unit {
+    width: 150px;
+    height: 180px;
+}
+
+/* The Card that contains the digit halves */
+.flip-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: 8rem;
+    line-height: 0.9;
+    text-align: center;
+    border-radius: 10px;
+    overflow: hidden;
+    color: #39FF14; /* Neon green digit color */
+    background-color: #0d0d0d; /* Very dark background for the card */
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.6), inset 0 0 5px rgba(57, 255, 20, 0.4);
+}
+
+/* Base Halves (always visible when not flipping) */
+.top-half, .bottom-half, .flip-top, .flip-bottom {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+    
+    /* Text centering within the half */
+    display: flex;
+    justify-content: center;
+}
+
+.top-half {
+    top: 0;
+    align-items: flex-end; /* Align number to the bottom of the top-half */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2); /* Small visual separation */
+}
+
+.bottom-half {
+    bottom: 0;
+    align-items: flex-start; /* Align number to the top of the bottom-half */
+}
+
+/* Flipping Elements */
+.flip-top, .flip-bottom {
+    background-color: #1a1a1a; /* Slightly lighter black for the flipping surface */
+    z-index: 10;
+}
+
+/* Initial state of the flip element */
+.flip-top {
+    top: 0;
+    align-items: flex-end;
+    transform-origin: bottom;
+    transform: rotateX(0deg);
+}
+
+.flip-bottom {
+    bottom: 0;
+    align-items: flex-start;
+    transform-origin: top;
+    transform: rotateX(90deg); /* Hidden initially */
+    z-index: 15; /* Ensures the bottom flip is over everything */
+}
+
+/* Animation Classes */
+
+/* 1. When flip starts: The top half rotates down (showing the old number) */
+.flip-card.do-flip .flip-top {
+    animation: flipTop 0.5s ease-in forwards;
+}
+
+/* 2. After flipTop ends: The bottom half rotates up (showing the new number) */
+.flip-card.do-flip .flip-bottom {
+    animation: flipBottom 0.5s ease-out 0.5s forwards;
+}
+
+/* Animation Keyframes */
+@keyframes flipTop {
+    0% {
+        transform: rotateX(0deg);
+    }
+    100% {
+        transform: rotateX(-90deg);
+    }
+}
+
+@keyframes flipBottom {
+    0% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0deg);
+    }
+}
+
+/* Text Content from Data Attributes */
+.flip-top::before,
+.flip-bottom::before {
+    content: attr(data-old); /* Default: show the 'old' number */
+    position: absolute;
+    width: 100%;
+}
+
+.flip-card.do-flip .flip-top::before {
+    content: attr(data-old); /* During flip, top shows OLD */
+}
+
+.flip-card.do-flip .flip-bottom::before {
+    content: attr(data-new); /* During flip, bottom shows NEW */
+}
+
+/* Positioning content inside the flipping halves */
+.flip-top::before {
+    bottom: 0;
+}
+
+.flip-bottom::before {
+    top: 0;
+}
